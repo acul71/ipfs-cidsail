@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "ipfs-http-client": "^49.0.4",
-    "ipfs-only-hash": "^4.0.0"
+    "ipfs-only-hash": "^4.0.0",
+    "meow": "^9.0.0"
   }
 }
