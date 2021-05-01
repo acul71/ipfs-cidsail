@@ -14,7 +14,7 @@ const ERROR = " 🛑ERROR"
 let DEBUG = true
 
 const getFileInfo = async (filePath, options) => {
-  const cid = await utils.getCID(filePath)
+  const cid = await utils.getCID(filePath, cidVersion=options.cidVersion)
   if (options.showCid) {    
     process.stdout.write(' CID(' + cid + ')')
   }
@@ -26,7 +26,7 @@ const getFileInfo = async (filePath, options) => {
   }
 }
 
-const walk = async (directory, prefix, options = { showCid:true, showNumOfProvs:true, debug:DEBUG }) => {
+const walk = async (directory, prefix, options = { cidVersion:1, showCid:true, showNumOfProvs:true, debug:DEBUG }) => {
   try {
     // https://itnext.io/why-async-await-in-a-foreach-is-not-working-5f13118f90d
     //fs.readdirSync(directory, { withFileTypes: true }).forEach( async (file, index, files) => { 
