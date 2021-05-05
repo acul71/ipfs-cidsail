@@ -22,7 +22,19 @@ const getFileInfo = async (filePath, options) => {
   if (options.showNumOfProvs && cid !== null) {
     const provs = await utils.findProvs(cid)
     process.stdout.write(` PROVS=${provs.length}`)
-    //console.log(' PROVS=', provs)
+    if (options.verbose == 1) {
+      if (provs.length) {
+        process.stdout.write('\n')
+        provs.map( (prov) => {
+          console.log('ID=', prov.id)
+        })
+      } 
+    } else if (options.verbose == 2) {
+      if (provs.length) {
+        process.stdout.write('\n')
+        console.log(provs)
+      }
+    }
   }
 }
 
