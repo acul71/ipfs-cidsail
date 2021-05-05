@@ -2,54 +2,25 @@
 
 const meow = require('meow')
 const ct = require('./cidtree')
-/*
-USAGE
-  ipfs ls <ipfs-path>... - List directory contents for Unix filesystem objects.
 
-SYNOPSIS
-  ipfs ls [--headers | -v] [--resolve-type=false] [--size=false] [--stream | -s] [--] <ipfs-path>...
-
-ARGUMENTS
-
-  <ipfs-path>... - The path to the IPFS object(s) to list links from.
-
-OPTIONS
-
-  -v, --headers   bool - Print table headers (Hash, Size, Name).
-  --resolve-type  bool - Resolve linked objects to find out their types. Default: true.
-  --size          bool - Resolve linked objects to find out their file size. Default: true.
-  -s, --stream    bool - Enable experimental streaming of directory entries as they are traversed.
-
-DESCRIPTION
-
-  Displays the contents of an IPFS or IPNS object(s) at the given path, with
-  the following format:
-  
-    <link base58 hash> <link size in bytes> <link name>
-  
-  The JSON output contains type information.
-
-
-
-
-*/
 const cli = meow(`
 USAGE
   cidcli file... - Check if a file is in IPFS
 
 SYNOPSIS
-  cidcli [--cidVersion=1] [debug=false] <[.| files | dir]>
+  cidcli [--cidVersion=1] [--debug=false] [--showCid=true] [--showNumOfProvs=true] [--verbose=0] <[.| files | dir]>
   
-
 ARGUMENTS
   . = current dir ('.' can be omitted)
   file(s) = list of file(s)
   directory(s) = list of directory(s)
 
 OPTIONS 
-  cidVersion = [0,1] default=1
-  debug = [true|false] default=false
-
+  --cidVersion = [0,1] default=1 - cidVersion to show (0 old, 1 new)
+  --debug = [true|false] default=false - Show debug (errors) info
+  --showCid = [true|false] default=true - Show cid
+  --showNumOfProvs = [true|false] default=true - Show number of peers that can provide a specific cid
+  --verbose = [0,1,2] default=0 - Show additional info about peers
 DESCRIPTION
   cidcli is a command line utility that helps you find/check/keep track/ of your files added on IPFS
 
@@ -76,6 +47,10 @@ EXAMPLES
     showNumOfProvs: {
       type: 'boolean',
       default: true
+    },
+    verbose: {
+      type: 'number',
+      default: 0
     }
   }
 })
