@@ -13,14 +13,16 @@ SYNOPSIS
 ARGUMENTS
   . = current dir ('.' can be omitted)
   file(s) = list of file(s)
-  directory(s) = list of directory(s)
+  dir(s) = list of directory(s)
 
 OPTIONS 
+  --ipfsUrl = [URL] default='' aka http://localhost:5001/api/v0 - A URL that resolves to a running instance of the IPFS HTTP API
   --cidVersion = [0,1] default=1 - cidVersion to show (0 old, 1 new)
   --debug = [true|false] default=false - Show debug (errors) info
   --showCid = [true|false] default=true - Show cid
   --showNumOfProvs = [true|false] default=true - Show number of peers that can provide a specific cid
   --verbose = [0,1,2] default=0 - Show additional info about peers
+
 DESCRIPTION
   cidcli is a command line utility that helps you find/check/keep track/ of your files added on IPFS
 
@@ -51,6 +53,10 @@ EXAMPLES
     verbose: {
       type: 'number',
       default: 0
+    },
+    ipfsUrl: {
+      type: 'string',
+      default: ''
     }
   }
 })

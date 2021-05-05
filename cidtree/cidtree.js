@@ -86,6 +86,8 @@ const walkRun = async (directory, options) => {
 //walkRun()
 
 const explore = async (files = [], options) => {
+  const url = options.ipfsUrl == '' ? {} : options.ipfsUrl
+  utils.ipfsInit(url)
   if (files.length == 0) files[0] = '.'
   for (let index = 0; index < files.length; index++) {
     const file = files[index]
