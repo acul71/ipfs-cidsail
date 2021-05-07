@@ -22,6 +22,7 @@ OPTIONS
   --showCid = [true|false] default=true - Show cid
   --showNumOfProvs = [true|false] default=true - Show number of peers that can provide a specific cid
   --verbose = [0,1,2] default=0 - Show additional info about peers
+  --ignoreHidden = [true|false] default=false - Ignore files and dirs name that have '.' as first char
 
 DESCRIPTION
   cidcli is a command line utility that helps you find/check/keep track/ of your files added on IPFS
@@ -57,7 +58,12 @@ EXAMPLES
     ipfsUrl: {
       type: 'string',
       default: ''
+    },
+    ignoreHidden: {
+      type: 'bool',
+      default: false
     }
+
   }
 })
 
