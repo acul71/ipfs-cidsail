@@ -60,7 +60,7 @@ EXAMPLES
       default: ''
     },
     ignoreHidden: {
-      type: 'bool',
+      type: 'boolean',
       default: false
     }
 
