@@ -1,35 +1,91 @@
 #!/usr/bin/env node
 
 const fs = require("fs")
+const stats = require("ipfs-http-client/src/stats")
 const path = require("path")
-
-const counts = { dirs: 0, files: 0 }
+const FileType = require('file-type')
 
 const utils = require('../lib/utils')
 
-const ERROR = " 🛑ERROR"
+const counts = { dirs: 0, files: 0 }
 
-let DEBUG = true
 
+// Some emoji
+const ERROR = '🛑ERROR'
+const HOME = '🏠'
+
+
+// ipfsID of server
+let ipfsID = null
 // 
 const cidStats = []
 
+//
+// Show stats 
+//
+const statsView = (cidStats = []) => {
+  let cidWithProvs = 0
+  let cidWithoutProvs = 0
+  cidStats.map( (k) => {
+    console.log(k.filesInfo.filesPath)
+    if (k.provsInfo.length === 0) {
+      cidWithoutProvs++
+    } else {
+      cidWithProvs++
+    }
+  })
+  console.log('cidWithProvs=', cidWithProvs)
+  console.log('cidWithoutProvs=', cidWithoutProvs)
+  //console.log(cidStats)
+  //console.dir(cidStats, { depth: null })
+  console.log(JSON.stringify(cidStats, undefined, 2))
+}
 
-
+//
+// Get file Info (CID, PROVS, FILE PATH and SIZE and TYPE)
+//
 const getFileInfo = async (filePath, options) => {
+  // Get CID
   const cid = await utils.getCID(filePath, cidVersion=options.cidVersion)
   if (options.showCid) {    
     process.stdout.write(' CID(' + cid + ')')
   }
 
+  // Get file type
+  let fileType = await FileType.fromFile(filePath)
+  //console.log('fileType=',fileType)
+  if (fileType === undefined) {
+    // TODO: Add check for not binary types
+    fileType = 'Not Binary?'
+  }
+
+  // Get file size
+  const stat = fs.statSync(filePath)
+  if (stat.size == 0) {
+    process.stdout.write(' (Size: 0)')
+  }
+
   if (options.showNumOfProvs && cid !== null) {
-    const provs = await utils.findProvs(cid)
+    const provs = await utils.findProvs(cid, {timeout: options.provsTimeout})
     process.stdout.write(` PROVS=${provs.length}`)
+    
+    // Check if provider is home (is the provider in ipfsUrl)
+    let provHome = false
+    if (provs.length) {
+      if (provs.findIndex( (prov) => prov.id == ipfsID) > -1) {
+        if (options.verbose == 0) {
+          process.stdout.write(' ' + HOME)
+        }
+        provHome = true
+      }
+    }
+
     if (options.verbose == 1) {
       if (provs.length) {
         process.stdout.write('\n')
         provs.map( (prov) => {
-          console.log('ID=', prov.id)
+          home = prov.id == ipfsID ? ' ' + HOME : ''
+          console.log('ID=', prov.id + home)
         })
       } 
     } else if (options.verbose == 2) {
@@ -40,18 +96,32 @@ const getFileInfo = async (filePath, options) => {
       }
     }
     //if (options.stats) {
-      if (true) {
-      cidStats.push({
-        cid: cid,
-        filePath: filePath,
-        provsNum: provs.length,
-        provsInfo: provs
-      })
+    if (true) {
+      const cidIdx = cidStats.findIndex( (cidS) => cidS.cid == cid)
+      // If cid is not found add it
+      if (cidIdx == -1) {
+        cidStats.push({
+          cid: cid,
+          filesInfo: {filesPath: [filePath], fileType: fileType, fileSize: stat.size},
+          provsInfo: provs,
+          provHome: provHome
+        })
+      } else { 
+        const fileIdx = cidStats[cidIdx].filesInfo.filesPath.findIndex( (fileP) => fileP == filePath)
+        // If filePath is not found add filePath in files list (filesInfo.filesPath)
+        if (fileIdx == -1) {
+          cidStats[cidIdx].filesInfo.filesPath.push(filePath)
+        }
+      }
     }
   }
 }
 
-const walk = async (directory, prefix, options = { cidVersion:1, showCid:true, showNumOfProvs:true, debug:DEBUG }) => {
+
+//
+// Walk directory looking for files
+//
+const walk = async (directory, prefix, options = { cidVersion:1, showCid:true, showNumOfProvs:true, debug:false }) => {
   try {
     // https://itnext.io/why-async-await-in-a-foreach-is-not-working-5f13118f90d
     //fs.readdirSync(directory, { withFileTypes: true }).forEach( async (file, index, files) => { 
@@ -85,26 +155,39 @@ const walk = async (directory, prefix, options = { cidVersion:1, showCid:true, s
     if (options.debug) {
       console.log(err)
     } else {
-      process.stdout.write(ERROR)
+      process.stdout.write(' ' + ERROR)
     }
   }
 }
 
 const walkRun = async (directory, options) => {
-  //const directory = process.argv[2] || ".";
   process.stdout.write(directory)
-  
   await walk(directory, "", options)
-  //console.log(`\n${counts.dirs} directories, ${counts.files} files\n`)
 }
 
-//walkRun()
 
+//
+// explore a files list 
+//
 const explore = async (files = [], options) => {
+  // Set ipfs server URL
   const url = options.ipfsUrl == '' ? {} : options.ipfsUrl
   utils.ipfsInit(url)
+  
+  // Get ipfsID
+  ipfsID = await utils.ipfsID()
+  console.log('Local ipfs server ID=', ipfsID)
+
+  pinLs = await utils.ipfsPinLs()
+  //console.log('pinLs=', pinLs)
+  console.log('pinLs=', pinLs[0].cid)
+
+  // if no files or dirs set cur dir '.'
   if (files.length == 0) files[0] = '.'
+  
   console.log()
+  
+  // Parse all the input files
   for (let index = 0; index < files.length; index++) {
     const file = files[index]
     //console.log(file)
@@ -123,11 +206,15 @@ const explore = async (files = [], options) => {
       console.log(`${file}: don't exists`)
     }
   }
+  
   console.log(`${counts.dirs} directories, ${counts.files} files\n`)
+  
+  // CID Stats
   //if (options.stats) {
-  //if (true) {
-  //  console.log(cidStats)
-  //}  
+  if (true) {
+    statsView(cidStats)
+    //console.log(cidStats)
+  }  
 }
 
 exports.explore = explore
