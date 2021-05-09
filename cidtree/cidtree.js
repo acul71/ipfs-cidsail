@@ -4,6 +4,7 @@ const fs = require("fs")
 const stats = require("ipfs-http-client/src/stats")
 const path = require("path")
 const FileType = require('file-type')
+const { Table } = require("console-table-printer");
 
 const utils = require('../lib/utils')
 
@@ -17,28 +18,70 @@ const HOME = '🏠'
 
 // ipfsID of server
 let ipfsID = null
-// 
+// cidStats a structure that holds parsed cid stats/info
 const cidStats = []
 
 //
 // Show stats 
 //
-const statsView = (cidStats = []) => {
+const statsView = (cidStats = [], options) => {
+  console.log()
+  console.log('----------------------------------------------------------------------------------------------------------------------------------------')
+  console.log()
+  
   let cidWithProvs = 0
   let cidWithoutProvs = 0
+
+  const p = new Table({
+    columns: [
+      { name: "CID", alignment: "left" },
+      { name: "Files path", alignment: "left", maxLen: 50 },
+      { name: "File type", alignment: "center" },
+      { name: "File size", alignment: "right" },
+      { name: "Provs", alignment: "right" },
+      { name: 'HOME', alignment: "center" },
+    ],
+  })
+
   cidStats.map( (k) => {
-    console.log(k.filesInfo.filesPath)
+    //console.log(k.provsInfo.length)
     if (k.provsInfo.length === 0) {
       cidWithoutProvs++
     } else {
       cidWithProvs++
     }
+    p.addRow(
+      {
+        'CID': k.cid,
+        'Files path': k.filesInfo.filesPath.join(' '),
+        'File type': k.filesInfo.fileType.mime,
+        'File size': k.filesInfo.fileSize,
+        'Provs': k.provsInfo.length,
+        'HOME': k.provHome ? HOME : '-'
+      }
+    )
+    console.log(`${k.cid}\t${k.filesInfo.filesPath.join(' ')}\t${k.filesInfo.fileType.mime}\t${k.filesInfo.fileSize}\t${k.provsInfo.length}\t${k.provHome}`)
   })
+  
+  console.log()
+  console.log('----------------------------------------------------------------------------------------------------------------------------------------')
+  console.log()
+  
+  // print
+  p.printTable();
+  
   console.log('cidWithProvs=', cidWithProvs)
   console.log('cidWithoutProvs=', cidWithoutProvs)
-  //console.log(cidStats)
+  
+  console.log()
+  console.log('----------------------------------------------------------------------------------------------------------------------------------------')
+  console.log()
+
   //console.dir(cidStats, { depth: null })
-  console.log(JSON.stringify(cidStats, undefined, 2))
+  if (options.debug) {
+  //if (true) {
+    console.log(JSON.stringify(cidStats, undefined, 2))
+  }
 }
 
 //
@@ -56,7 +99,9 @@ const getFileInfo = async (filePath, options) => {
   //console.log('fileType=',fileType)
   if (fileType === undefined) {
     // TODO: Add check for not binary types
-    fileType = 'Not Binary?'
+    const ext = path.extname(path.basename(filePath)).substring(1)
+    fileType = { ext: ext, mime: "Not Binary?" }
+
   }
 
   // Get file size
@@ -178,9 +223,10 @@ const explore = async (files = [], options) => {
   ipfsID = await utils.ipfsID()
   console.log('Local ipfs server ID=', ipfsID)
 
-  pinLs = await utils.ipfsPinLs()
+  // Testing pins
+  //pinLs = await utils.ipfsPinLs()
   //console.log('pinLs=', pinLs)
-  console.log('pinLs=', pinLs[0].cid)
+  //console.log('pinLs=', pinLs[0].cid)
 
   // if no files or dirs set cur dir '.'
   if (files.length == 0) files[0] = '.'
@@ -212,7 +258,7 @@ const explore = async (files = [], options) => {
   // CID Stats
   //if (options.stats) {
   if (true) {
-    statsView(cidStats)
+    statsView(cidStats, options)
     //console.log(cidStats)
   }  
 }
