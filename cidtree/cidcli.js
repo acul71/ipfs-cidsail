@@ -21,6 +21,7 @@ OPTIONS
   --debug = [true|false] default=false - Show debug (errors) info
   --showCid = [true|false] default=true - Show cid
   --showNumOfProvs = [true|false] default=true - Show number of peers that can provide a specific cid
+  --provsTimeout = [milliseconds] default=1500 - Number of milliseconds to find providers
   --verbose = [0,1,2] default=0 - Show additional info about peers
   --ignoreHidden = [true|false] default=false - Ignore files and dirs name that have '.' as first char
 
@@ -62,8 +63,11 @@ EXAMPLES
     ignoreHidden: {
       type: 'boolean',
       default: false
-    }
-
+    },
+    provsTimeout: {
+      type: 'number',
+      default: 1500
+    },
   }
 })
 
