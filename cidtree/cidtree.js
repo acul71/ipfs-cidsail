@@ -4,7 +4,8 @@ const fs = require("fs")
 const stats = require("ipfs-http-client/src/stats")
 const path = require("path")
 const FileType = require('file-type')
-const { Table } = require("console-table-printer");
+const { Table } = require("console-table-printer")
+const CID = require('cids')
 
 const utils = require('../lib/utils')
 
@@ -14,12 +15,18 @@ const counts = { dirs: 0, files: 0 }
 // Some emoji
 const ERROR = '🛑ERROR'
 const HOME = '🏠'
+const PINNED = '📌'
+// 🟢
 
 
 // ipfsID of server
 let ipfsID = null
 // cidStats a structure that holds parsed cid stats/info
 const cidStats = []
+// pinLs an array of current pinLs from server
+let pinLs = []
+
+
 
 //
 // Show stats 
@@ -31,6 +38,8 @@ const statsView = (cidStats = [], options) => {
   
   let cidWithProvs = 0
   let cidWithoutProvs = 0
+  let cidPinnedNum = 0
+  let cidNotPinnedNum = 0
 
   const p = new Table({
     columns: [
@@ -50,6 +59,15 @@ const statsView = (cidStats = [], options) => {
     } else {
       cidWithProvs++
     }
+
+    let cidPinned = true
+    if (Object.keys(k.pin).length === 0) {
+      cidNotPinnedNum++
+      cidPinned = false
+    } else {
+      cidPinnedNum++
+    }
+    
     p.addRow(
       {
         'CID': k.cid,
@@ -57,10 +75,11 @@ const statsView = (cidStats = [], options) => {
         'File type': k.filesInfo.fileType.mime,
         'File size': k.filesInfo.fileSize,
         'Provs': k.provsInfo.length,
-        'HOME': k.provHome ? HOME : '-'
+        'HOME': k.provHome ? HOME : '-',
+        'PIN': cidPinned ? PINNED : '-'
       }
     )
-    console.log(`${k.cid}\t${k.filesInfo.filesPath.join(' ')}\t${k.filesInfo.fileType.mime}\t${k.filesInfo.fileSize}\t${k.provsInfo.length}\t${k.provHome}`)
+    console.log(`${k.cid}\t${k.filesInfo.filesPath.join(' ')}\t${k.filesInfo.fileType.mime}\t${k.filesInfo.fileSize}\t${k.provsInfo.length}\t${k.provHome}\t${cidPinned}`)
   })
   
   console.log()
@@ -72,7 +91,9 @@ const statsView = (cidStats = [], options) => {
   
   console.log('cidWithProvs=', cidWithProvs)
   console.log('cidWithoutProvs=', cidWithoutProvs)
-  
+  console.log('cid pinned =', cidPinnedNum)
+  console.log('cid not pinned =', cidNotPinnedNum)
+
   console.log()
   console.log('----------------------------------------------------------------------------------------------------------------------------------------')
   console.log()
@@ -109,6 +130,21 @@ const getFileInfo = async (filePath, options) => {
   if (stat.size == 0) {
     process.stdout.write(' (Size: 0)')
   }
+
+  // Check if is pinned
+  let wcid = new CID(cid)
+  if (options.cidVersion == 1) {  
+    wcid = wcid.toV0()
+    //console.log('wicd=', wcid)
+  }
+  let cidPinned = {}
+  const cidPinIdx = pinLs.findIndex( (pin) => pin.cid.toString() == wcid.toString())
+  if (cidPinIdx > -1) {
+    //console.log(pinLs[cidPinIdx])
+    cidPinned = pinLs[cidPinIdx]
+  }
+  //pinLs.map((cid) => console.log(cid.cid))
+
 
   if (options.showNumOfProvs && cid !== null) {
     const provs = await utils.findProvs(cid, {timeout: options.provsTimeout})
@@ -149,7 +185,8 @@ const getFileInfo = async (filePath, options) => {
           cid: cid,
           filesInfo: {filesPath: [filePath], fileType: fileType, fileSize: stat.size},
           provsInfo: provs,
-          provHome: provHome
+          provHome: provHome,
+          pin: cidPinned
         })
       } else { 
         const fileIdx = cidStats[cidIdx].filesInfo.filesPath.findIndex( (fileP) => fileP == filePath)
@@ -224,7 +261,7 @@ const explore = async (files = [], options) => {
   console.log('Local ipfs server ID=', ipfsID)
 
   // Testing pins
-  //pinLs = await utils.ipfsPinLs()
+  pinLs = await utils.ipfsPinLs()
   //console.log('pinLs=', pinLs)
   //console.log('pinLs=', pinLs[0].cid)
 
