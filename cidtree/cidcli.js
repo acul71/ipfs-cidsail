@@ -16,14 +16,14 @@ ARGUMENTS
   dir(s) = list of directory(s)
 
 OPTIONS 
-  --ipfsUrl = [URL] default='' aka http://localhost:5001/api/v0 - A URL that resolves to a running instance of the IPFS HTTP API
-  --cidVersion = [0,1] default=1 - cidVersion to show (0 old, 1 new)
-  --debug = [true|false] default=false - Show debug (errors) info
-  --showCid = [true|false] default=true - Show cid
-  --showNumOfProvs = [true|false] default=true - Show number of peers that can provide a specific cid
-  --provsTimeout = [milliseconds] default=1500 - Number of milliseconds to find providers
-  --verbose = [0,1,2] default=0 - Show additional info about peers
-  --ignoreHidden = [true|false] default=false - Ignore files and dirs name that have '.' as first char
+  --ipfsUrl, -iu = [URL] default='' aka http://localhost:5001/api/v0 - A URL that resolves to a running instance of the IPFS HTTP API
+  --cidVersion, -c = [0,1] default=1 - cidVersion to show (0 old, 1 new)
+  --debug, -d = [true|false] default=false - Show debug (errors) info
+  --showCid, -sc = [true|false] default=true - Show cid
+  --showNumOfProvs, -sp = [true|false] default=true - Show number of peers that can provide a specific cid
+  --provsTimeout, -pt = [milliseconds] default=1500 - Number of milliseconds to find providers
+  --verbose, -v = [0,1,2] default=0 - Show additional info about peers
+  --ignoreHidden, -ih = [true|false] default=false - Ignore files and dirs name that have '.' as first char
 
 DESCRIPTION
   cidcli is a command line utility that helps you find/check/keep track/ of your files added on IPFS
@@ -38,34 +38,42 @@ EXAMPLES
   flags: {
     cidVersion: {
       type: 'number',
+      alias: 'c',
       default: 1
     },
     debug: {
       type: 'boolean',
+      alias: 'd',
       default: false
     },
     showCid: {
       type: 'boolean',
+      alias: 'sc',
       default: true
     },
     showNumOfProvs: {
       type: 'boolean',
+      alias: 'sp',
       default: true
     },
     verbose: {
       type: 'number',
+      alias: 'v',
       default: 0
     },
     ipfsUrl: {
       type: 'string',
+      alias: 'iu',
       default: ''
     },
     ignoreHidden: {
       type: 'boolean',
+      alias: 'ih',
       default: false
     },
     provsTimeout: {
       type: 'number',
+      alias: 'pt',
       default: 1500
     },
   }

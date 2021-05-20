@@ -44,7 +44,6 @@ It's a command line utility.
 - complete stats 
 - pin list
 - mfs ?
-- meow short param
 - codcli version
 - chalk colors
 - fix different provs for same cid (sometimes)?
