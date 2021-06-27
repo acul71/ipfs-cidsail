@@ -38,6 +38,14 @@ This are the libraries used:
 It is written in javascript (nodejs). 
 It's a command line utility. 
 
+### Screenshots
+![cidcli help](img/cidcli_01_help.png)
+![cidcli tmp files tree](img/cidcli_02_tree.png)
+![cidcli run on tmp 1/2](img/cidcli_03_tmp.png)
+![cidcli run on tmp 2/2](img/cidcli_04_tmp.png)
+![cidcli run on aardvark.png file](img/cidcli_05_aardvark.png)
+
+
 ### TODO
  I'm planning to write a GUI using react for a better user experience managing adding files and visualize stats and data.
 
