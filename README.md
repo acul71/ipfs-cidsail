@@ -49,6 +49,7 @@ It's a command line utility.
 ### TODO
  I'm planning to write a GUI using react for a better user experience managing adding files and visualize stats and data.
 
+- check that all options works as expeted (in combination) and update help screen
 - complete stats 
 - pin list
 - mfs ?
